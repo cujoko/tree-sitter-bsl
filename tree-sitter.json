@@ -7,10 +7,7 @@
       "title": "BSL",
       "scope": "source.bsl",
       "path": "grammars/bsl",
-      "file-types": [
-        "bsl",
-        "osl"
-      ],
+      "file-types": ["bsl", "osl"],
       "injection-regex": "^bsl$",
       "class-name": "TreeSitterBsl"
     },
@@ -20,15 +17,13 @@
       "title": "SDBL",
       "scope": "source.sdbl",
       "path": "grammars/sdbl",
-      "file-types": [
-        "sdbl"
-      ],
+      "file-types": ["sdbl"],
       "injection-regex": "^sdbl$",
       "class-name": "TreeSitterSdbl"
     }
   ],
   "metadata": {
-    "version": "0.1.8",
+    "version": "0.1.9",
     "license": "MIT",
     "description": "1C (BSL) language",
     "authors": [

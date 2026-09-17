@@ -1,3 +1,14 @@
+## v0.1.9
+
+### Parser
+
+- Ported four SDBL parse-gap fixes from upstream
+  [PR #13](https://github.com/alkoleft/tree-sitter-bsl/pull/13): field
+  access after `ВЫРАЗИТЬ(...)`, tuple left-hand sides of `В`,
+  `УНИЧТОЖИТЬ` inside query packages, and nested joins with deferred
+  `ПО`. Official `develop` had no new commits. Fork packaging, bindings
+  and the `tree-sitter-bsl` name are unchanged.
+
 ## v0.1.8
 
 ### Packaging

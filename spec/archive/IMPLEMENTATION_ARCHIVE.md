@@ -600,7 +600,7 @@ Archived result:
 - Moved `index_by_clause` after optional `where_clause`, `group_by_clause` and
   `having_clause` in `select_section`.
 - Replaced the negative corpus case with a positive `Select index clause after
-  where` contract.
+where` contract.
 - Regenerated standalone SDBL and Zed embedded-SDBL parser artifacts.
 - Validated `npm run test:corpus:sdbl` and a Zed embedded parser check for the
   WMS raw string fixture.
@@ -654,3 +654,45 @@ Archived result:
   synthetic `MISSING identifier` node.
 - Regenerated BSL parser artifacts; `npm run lint` and `npm run test:corpus`
   passed.
+
+## Archived on 2026-09-17
+
+### SDBL grammar coverage from upstream PR #13
+
+The official `alkoleft/tree-sitter-bsl` `develop` branch had no new commits
+after the 2026-07-17 merge. These four parse gaps landed only in
+[upstream PR #13](https://github.com/alkoleft/tree-sitter-bsl/pull/13). The
+fork kept its own packaging (Python/Rust/Node bindings, no `tree-sitter-hbk`
+rename, no Zed/Go ABI-14 generate contract) and took the SDBL grammar,
+corpus and coverage notes.
+
+#### S-CAST-DEREF - Field dereference after ВЫРАЗИТЬ(...)
+
+Status: done.
+
+Archived result:
+
+- Added `cast_field_access` node: `cast_expression` followed by
+  `repeat1('.' field)` so `ВЫРАЗИТЬ(X КАК Справочник.Организации).Поле`
+  and longer chains parse without `ERROR`; existing `cast_expression`
+  node shape unchanged.
+- Added corpus sections "Select cast expression with field dereference"
+  and "Select cast dereference inside where condition" in
+  `grammars/sdbl/test/corpus/select.sdbl`.
+
+#### S-REAL-CORPUS-GAPS - Tuple IN, destroy in package, nested joins
+
+Status: done.
+
+Archived result:
+
+- `expression_tuple` (2+ elements) allowed as `membership_expression` left
+  side: `(А, Б) В (ВЫБРАТЬ ...)`, including inside virtual table
+  parameters. Single-element parenthesized expression keeps its existing
+  `parenthesized_expression` shape (no conflict introduced).
+- `query_package` elements are now `query | destroy_statement`, so
+  `УНИЧТОЖИТЬ ВТ` participates in packages instead of failing after `;`.
+- `join_clause` accepts nested `join_clause` before its `ON_KEYWORD`:
+  `А ЛС Б ЛС В ПО у1 ПО у2` (deferred ON conditions bind innermost-first).
+  Flat join chains keep their previous shape.
+- Corpus: +4 sections in `grammars/sdbl/test/corpus/select.sdbl`.

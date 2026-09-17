@@ -1,12 +1,13 @@
 /// <reference types='tree-sitter-cli/dsl' />
 
 const keyword = (...words) => {
-  const rule = words.length === 1
-    ? caseInsensitive(words[0])
-    : choice(...words.map(caseInsensitive));
+  const rule =
+    words.length === 1
+      ? caseInsensitive(words[0])
+      : choice(...words.map(caseInsensitive));
   return token(prec(1, rule));
 };
-const caseInsensitive = (word) => new RegExp(word, 'i');
+const caseInsensitive = (word) => new RegExp(word, "i");
 
 const PREC = {
   OR: 1,
@@ -19,7 +20,7 @@ const PREC = {
 };
 
 module.exports = grammar({
-  name: 'sdbl',
+  name: "sdbl",
 
   extras: ($) => [/\s/, $.line_comment],
 
@@ -30,10 +31,12 @@ module.exports = grammar({
 
     query_package: ($) =>
       seq(
-        $.query,
-        repeat1(seq(';', $.query)),
-        optional(';'),
+        $._package_element,
+        repeat1(seq(";", $._package_element)),
+        optional(";"),
       ),
+
+    _package_element: ($) => choice($.query, $.destroy_statement),
 
     query: ($) =>
       seq(
@@ -61,21 +64,16 @@ module.exports = grammar({
       ),
 
     union_clause: ($) =>
-      seq(
-        $.UNION_KEYWORD,
-        optional($.ALL_KEYWORD),
-        $.select_section,
-      ),
+      seq($.UNION_KEYWORD, optional($.ALL_KEYWORD), $.select_section),
 
-    order_by_clause: ($) =>
-      seq($.ORDER_KEYWORD, $.BY_KEYWORD, $.ordering_list),
+    order_by_clause: ($) => seq($.ORDER_KEYWORD, $.BY_KEYWORD, $.ordering_list),
 
-    ordering_list: ($) => sepBy1(',', $.ordering_item),
+    ordering_list: ($) => sepBy1(",", $.ordering_item),
 
     ordering_item: ($) =>
       seq(
-        field('value', $.query_expression),
-        optional(field('direction', $.ordering_direction)),
+        field("value", $.query_expression),
+        optional(field("direction", $.ordering_direction)),
       ),
 
     ordering_direction: ($) =>
@@ -104,40 +102,38 @@ module.exports = grammar({
         ),
       ),
 
-    totals_field_list: ($) => sepBy1(',', $.totals_field),
+    totals_field_list: ($) => sepBy1(",", $.totals_field),
 
     totals_field: ($) =>
-      seq(
-        field('value', $.query_expression),
-        optional($.field_alias),
-      ),
+      seq(field("value", $.query_expression), optional($.field_alias)),
 
-    totals_group_list: ($) => sepBy1(',', $.totals_group),
+    totals_group_list: ($) => sepBy1(",", $.totals_group),
 
     totals_group: ($) =>
       seq(
-        field('value', $.query_expression),
-        optional(choice(
-          seq(optional($.ONLY_KEYWORD), $.HIERARCHY_KEYWORD),
-          $.totals_periods_clause,
-        )),
+        field("value", $.query_expression),
+        optional(
+          choice(
+            seq(optional($.ONLY_KEYWORD), $.HIERARCHY_KEYWORD),
+            $.totals_periods_clause,
+          ),
+        ),
         optional($.field_alias),
       ),
 
     totals_periods_clause: ($) =>
       seq(
         $.PERIODS_KEYWORD,
-        '(',
-        field('period', $.totals_period_unit),
-        optional(seq(
-          ',',
-          field('start', $.totals_period_bound),
-          optional(seq(
-            ',',
-            field('end', $.totals_period_bound),
-          )),
-        )),
-        ')',
+        "(",
+        field("period", $.totals_period_unit),
+        optional(
+          seq(
+            ",",
+            field("start", $.totals_period_bound),
+            optional(seq(",", field("end", $.totals_period_bound))),
+          ),
+        ),
+        ")",
       ),
 
     totals_period_unit: ($) =>
@@ -155,78 +151,76 @@ module.exports = grammar({
       ),
 
     totals_period_bound: ($) =>
-      choice(
-        $.date_time_literal,
-        $.date,
-        $.parameter,
-      ),
+      choice($.date_time_literal, $.date, $.parameter),
 
-    top_clause: ($) => seq($.TOP_KEYWORD, field('count', $.number)),
+    top_clause: ($) => seq($.TOP_KEYWORD, field("count", $.number)),
 
-    field_list: ($) => choice($.wildcard, sepBy1(',', $.field)),
+    field_list: ($) => choice($.wildcard, sepBy1(",", $.field)),
 
     field: ($) =>
-      prec.right(seq(
-        field('value', choice(
-          $.nested_table_field_expression,
-          $.empty_table_expression,
-          $.query_expression,
-        )),
-        optional($.field_alias),
-      )),
+      prec.right(
+        seq(
+          field(
+            "value",
+            choice(
+              $.nested_table_field_expression,
+              $.empty_table_expression,
+              $.query_expression,
+            ),
+          ),
+          optional($.field_alias),
+        ),
+      ),
 
     field_alias: ($) => seq(optional($.AS_KEYWORD), $._alias_identifier),
 
-    wildcard: () => '*',
+    wildcard: () => "*",
 
     nested_table_field_expression: ($) =>
       prec(
         PREC.CALL,
         seq(
-          field('table', $._qualified_name),
-          field('group', $.nested_field_group),
+          field("table", $._qualified_name),
+          field("group", $.nested_field_group),
         ),
       ),
 
     nested_field_group: ($) =>
       choice(
-        alias('.*', $.wildcard),
-        seq('.(', field('fields', $.nested_field_list), ')'),
+        alias(".*", $.wildcard),
+        seq(".(", field("fields", $.nested_field_list), ")"),
       ),
 
-    nested_field_list: ($) => sepBy1(',', $.nested_field),
+    nested_field_list: ($) => sepBy1(",", $.nested_field),
 
     nested_field: ($) =>
-      seq(
-        field('value', $.query_expression),
-        optional($.field_alias),
-      ),
+      seq(field("value", $.query_expression), optional($.field_alias)),
 
     empty_table_expression: ($) =>
       seq(
         $.EMPTY_TABLE_KEYWORD,
-        '.',
-        '(',
-        field('fields', $.empty_table_field_list),
-        ')',
+        ".",
+        "(",
+        field("fields", $.empty_table_field_list),
+        ")",
       ),
 
-    empty_table_field_list: ($) => sepBy1(',', $.identifier),
+    empty_table_field_list: ($) => sepBy1(",", $.identifier),
 
-    into_clause: ($) => seq($.INTO_KEYWORD, field('name', $.identifier)),
+    into_clause: ($) => seq($.INTO_KEYWORD, field("name", $.identifier)),
 
-    add_clause: ($) => seq($.ADD_KEYWORD, field('name', $.identifier)),
+    add_clause: ($) => seq($.ADD_KEYWORD, field("name", $.identifier)),
 
     destroy_statement: ($) =>
-      seq($.DESTROY_KEYWORD, field('name', $.identifier)),
+      seq($.DESTROY_KEYWORD, field("name", $.identifier)),
 
     from_clause: ($) => seq($.FROM_KEYWORD, $.source_list),
 
-    source_list: ($) => sepBy1(',', $.table_source),
+    source_list: ($) => sepBy1(",", $.table_source),
 
     table_source: ($) =>
       seq(
-        field('name', $._source_description),
+        field("name", $._source_description),
         optional($.source_alias),
         repeat($.join_clause),
       ),
@@ -240,41 +234,42 @@ module.exports = grammar({
       ),
 
     virtual_table_source: ($) =>
-      seq(
-        field('name', $._qualified_name),
-        $.virtual_table_parameters,
-      ),
+      seq(field("name", $._qualified_name), $.virtual_table_parameters),
 
     virtual_table_parameters: ($) =>
       seq(
-        '(',
-        optional(choice(
-          $.expression_list,
-          $._virtual_table_parameter_list,
-        )),
-        ')',
+        "(",
+        optional(choice($.expression_list, $._virtual_table_parameter_list)),
+        ")",
       ),
 
     _virtual_table_parameter_list: ($) =>
-      prec.right(-1, choice(
-        $.query_expression,
-        seq($.query_expression, ',', $._virtual_table_parameter_list),
-        seq($.query_expression, alias(',', $.omitted_argument)),
-        seq(alias(',', $.omitted_argument), optional($._virtual_table_parameter_list)),
-      )),
+      prec.right(
+        -1,
+        choice(
+          $.query_expression,
+          seq($.query_expression, ",", $._virtual_table_parameter_list),
+          seq($.query_expression, alias(",", $.omitted_argument)),
+          seq(
+            alias(",", $.omitted_argument),
+            optional($._virtual_table_parameter_list),
+          ),
+        ),
+      ),
 
-    nested_query_source: ($) => seq('(', $.query, ')'),
+    nested_query_source: ($) => seq("(", $.query, ")"),
 
     source_alias: ($) => seq(optional($.AS_KEYWORD), $.identifier),
 
     join_clause: ($) =>
       seq(
-        optional(field('kind', $.join_kind)),
+        optional(field("kind", $.join_kind)),
         $.JOIN_KEYWORD,
-        field('source', $._source_description),
+        field("source", $._source_description),
         optional($.source_alias),
+        repeat($.join_clause),
         $.ON_KEYWORD,
-        field('condition', $.query_expression),
+        field("condition", $.query_expression),
       ),
 
     join_kind: ($) =>
@@ -302,11 +297,11 @@ module.exports = grammar({
         optional(seq(optional($.OF_KEYWORD), $.table_list)),
       ),
 
-    expression_list: ($) => sepBy1(',', $.query_expression),
+    expression_list: ($) => sepBy1(",", $.query_expression),
 
-    omitted_argument: () => ',',
+    omitted_argument: () => ",",
 
-    table_list: ($) => sepBy1(',', $._qualified_name),
+    table_list: ($) => sepBy1(",", $._qualified_name),
 
     query_expression: ($) =>
       choice(
@@ -333,16 +328,17 @@ module.exports = grammar({
         $.aggregate_function,
         $.case_expression,
         $.cast_expression,
+        $.cast_field_access,
       ),
 
-    parenthesized_expression: ($) => seq('(', $.query_expression, ')'),
+    parenthesized_expression: ($) => seq("(", $.query_expression, ")"),
 
     unary_expression: ($) =>
       prec.right(
         PREC.UNARY,
         seq(
-          field('operator', choice($.not_operator, $.sign_operator)),
-          field('argument', $.query_expression),
+          field("operator", choice($.not_operator, $.sign_operator)),
+          field("argument", $.query_expression),
         ),
       ),
 
@@ -351,41 +347,41 @@ module.exports = grammar({
         prec.left(
           PREC.OR,
           seq(
-            field('left', $.query_expression),
-            field('operator', $.OR_KEYWORD),
-            field('right', $.query_expression),
+            field("left", $.query_expression),
+            field("operator", $.OR_KEYWORD),
+            field("right", $.query_expression),
           ),
         ),
         prec.left(
           PREC.AND,
           seq(
-            field('left', $.query_expression),
-            field('operator', $.AND_KEYWORD),
-            field('right', $.query_expression),
+            field("left", $.query_expression),
+            field("operator", $.AND_KEYWORD),
+            field("right", $.query_expression),
           ),
         ),
         prec.left(
           PREC.COMPARE,
           seq(
-            field('left', $.query_expression),
-            field('operator', $.comparison_operator),
-            field('right', $.query_expression),
+            field("left", $.query_expression),
+            field("operator", $.comparison_operator),
+            field("right", $.query_expression),
           ),
         ),
         prec.left(
           PREC.ADDITIVE,
           seq(
-            field('left', $.query_expression),
-            field('operator', alias(choice('+', '-'), $.arithmetic_operator)),
-            field('right', $.query_expression),
+            field("left", $.query_expression),
+            field("operator", alias(choice("+", "-"), $.arithmetic_operator)),
+            field("right", $.query_expression),
           ),
         ),
         prec.left(
           PREC.MULTIPLICATIVE,
           seq(
-            field('left', $.query_expression),
-            field('operator', alias(choice('*', '/'), $.arithmetic_operator)),
-            field('right', $.query_expression),
+            field("left", $.query_expression),
+            field("operator", alias(choice("*", "/"), $.arithmetic_operator)),
+            field("right", $.query_expression),
           ),
         ),
       ),
@@ -394,28 +390,31 @@ module.exports = grammar({
       prec.left(
         PREC.COMPARE,
         seq(
-          field('left', $.query_expression),
-          optional(field('not', $.NOT_KEYWORD)),
+          field("left", choice($.query_expression, $.expression_tuple)),
+          optional(field("not", $.NOT_KEYWORD)),
           $.IN_KEYWORD,
           optional($.HIERARCHY_KEYWORD),
-          field('right', choice($.value_list, $.subquery_expression)),
+          field("right", choice($.value_list, $.subquery_expression)),
         ),
       ),
 
-    value_list: ($) => seq('(', $.expression_list, ')'),
+    value_list: ($) => seq("(", $.expression_list, ")"),
 
-    subquery_expression: ($) => seq('(', $.query, ')'),
+    expression_tuple: ($) =>
+      seq("(", $.query_expression, repeat1(seq(",", $.query_expression)), ")"),
+
+    subquery_expression: ($) => seq("(", $.query, ")"),
 
     between_expression: ($) =>
       prec.left(
         PREC.COMPARE,
         seq(
-          field('left', $.query_expression),
-          optional(field('not', $.NOT_KEYWORD)),
+          field("left", $.query_expression),
+          optional(field("not", $.NOT_KEYWORD)),
           $.BETWEEN_KEYWORD,
-          field('lower', $.query_expression),
+          field("lower", $.query_expression),
           $.AND_KEYWORD,
-          field('upper', $.query_expression),
+          field("upper", $.query_expression),
         ),
       ),
 
@@ -423,11 +422,13 @@ module.exports = grammar({
       prec.left(
         PREC.COMPARE,
         seq(
-          field('left', $.query_expression),
-          optional(field('not', $.NOT_KEYWORD)),
+          field("left", $.query_expression),
+          optional(field("not", $.NOT_KEYWORD)),
           $.LIKE_KEYWORD,
-          field('pattern', $.query_expression),
-          optional(seq($.SPECIALCHAR_KEYWORD, field('escape', $.query_expression))),
+          field("pattern", $.query_expression),
+          optional(
+            seq($.SPECIALCHAR_KEYWORD, field("escape", $.query_expression)),
+          ),
         ),
       ),
 
@@ -435,9 +436,9 @@ module.exports = grammar({
       prec.left(
         PREC.COMPARE,
         seq(
-          field('left', $.query_expression),
+          field("left", $.query_expression),
           $.IS_KEYWORD,
-          optional(field('not', $.NOT_KEYWORD)),
+          optional(field("not", $.NOT_KEYWORD)),
           $.NULL_KEYWORD,
         ),
       ),
@@ -446,9 +447,9 @@ module.exports = grammar({
       prec.left(
         PREC.COMPARE,
         seq(
-          field('left', $.query_expression),
+          field("left", $.query_expression),
           $.REFERENCE_KEYWORD,
-          field('table', $.dotted_identifier),
+          field("table", $.dotted_identifier),
         ),
       ),
 
@@ -457,33 +458,30 @@ module.exports = grammar({
         PREC.CALL,
         seq(
           $.DATETIME_KEYWORD,
-          '(',
-          field('year', $.number),
-          ',',
-          field('month', $.number),
-          ',',
-          field('day', $.number),
-          optional(seq(
-            ',',
-            field('hour', $.number),
-            ',',
-            field('minute', $.number),
-            ',',
-            field('second', $.number),
-          )),
-          ')',
+          "(",
+          field("year", $.number),
+          ",",
+          field("month", $.number),
+          ",",
+          field("day", $.number),
+          optional(
+            seq(
+              ",",
+              field("hour", $.number),
+              ",",
+              field("minute", $.number),
+              ",",
+              field("second", $.number),
+            ),
+          ),
+          ")",
         ),
       ),
 
     type_literal: ($) =>
       prec(
         PREC.CALL,
-        seq(
-          $.TYPE_KEYWORD,
-          '(',
-          field('type', $.type_literal_name),
-          ')',
-        ),
+        seq($.TYPE_KEYWORD, "(", field("type", $.type_literal_name), ")"),
       ),
 
     type_literal_name: ($) =>
@@ -498,67 +496,63 @@ module.exports = grammar({
     predefined_value_literal: ($) =>
       prec(
         PREC.CALL,
-        seq(
-          $.VALUE_KEYWORD,
-          '(',
-          field('value', $.dotted_identifier),
-          ')',
-        ),
+        seq($.VALUE_KEYWORD, "(", field("value", $.dotted_identifier), ")"),
       ),
 
     function_call: ($) =>
       prec(
         PREC.CALL,
-        seq(
-          field('name', $._function_name),
-          $.function_arguments,
-        ),
+        seq(field("name", $._function_name), $.function_arguments),
       ),
 
     _function_name: ($) =>
-      choice(
-        $.identifier,
-        alias($.TYPE_VALUE_FUNCTION_NAME, $.identifier),
-      ),
+      choice($.identifier, alias($.TYPE_VALUE_FUNCTION_NAME, $.identifier)),
 
-    function_arguments: ($) =>
-      seq('(', optional($.expression_list), ')'),
+    function_arguments: ($) => seq("(", optional($.expression_list), ")"),
 
     aggregate_function: ($) =>
       prec(
         PREC.CALL,
         seq(
-          field('name', $.aggregate_function_name),
+          field("name", $.aggregate_function_name),
           choice(
-            seq(optional($.DISTINCT_KEYWORD), field('argument', $.query_expression)),
-            field('argument', $.wildcard),
+            seq(
+              optional($.DISTINCT_KEYWORD),
+              field("argument", $.query_expression),
+            ),
+            field("argument", $.wildcard),
           ),
-          ')',
+          ")",
         ),
       ),
 
     aggregate_function_name: ($) =>
-      token(prec(2, choice(
-        /сумма\s*\(/i,
-        /sum\s*\(/i,
-        /среднее\s*\(/i,
-        /avg\s*\(/i,
-        /average\s*\(/i,
-        /минимум\s*\(/i,
-        /min\s*\(/i,
-        /minimum\s*\(/i,
-        /максимум\s*\(/i,
-        /max\s*\(/i,
-        /maximum\s*\(/i,
-        /количество\s*\(/i,
-        /count\s*\(/i,
-      ))),
+      token(
+        prec(
+          2,
+          choice(
+            /сумма\s*\(/i,
+            /sum\s*\(/i,
+            /среднее\s*\(/i,
+            /avg\s*\(/i,
+            /average\s*\(/i,
+            /минимум\s*\(/i,
+            /min\s*\(/i,
+            /minimum\s*\(/i,
+            /максимум\s*\(/i,
+            /max\s*\(/i,
+            /maximum\s*\(/i,
+            /количество\s*\(/i,
+            /count\s*\(/i,
+          ),
+        ),
+      ),
 
     case_expression: ($) =>
       prec.right(
         seq(
           $.CASE_KEYWORD,
-          optional(field('value', $.query_expression)),
+          optional(field("value", $.query_expression)),
           repeat1($.case_when_clause),
           optional($.case_else_clause),
           $.END_KEYWORD,
@@ -568,28 +562,31 @@ module.exports = grammar({
     case_when_clause: ($) =>
       seq(
         $.WHEN_KEYWORD,
-        field('condition', $.query_expression),
+        field("condition", $.query_expression),
         $.THEN_KEYWORD,
-        field('result', $.query_expression),
+        field("result", $.query_expression),
       ),
 
     case_else_clause: ($) =>
-      seq(
-        $.ELSE_KEYWORD,
-        field('result', $.query_expression),
-      ),
+      seq($.ELSE_KEYWORD, field("result", $.query_expression)),
 
     cast_expression: ($) =>
       prec(
         PREC.CALL,
         seq(
           $.CAST_KEYWORD,
-          '(',
-          field('value', $.query_expression),
+          "(",
+          field("value", $.query_expression),
           $.AS_KEYWORD,
-          field('type', $.cast_type),
-          ')',
+          field("type", $.cast_type),
+          ")",
         ),
+      ),
+
+    cast_field_access: ($) =>
+      prec.right(
+        PREC.CALL,
+        seq($.cast_expression, repeat1(seq(".", field("field", $.identifier)))),
       ),
 
     cast_type: ($) =>
@@ -598,16 +595,18 @@ module.exports = grammar({
         $.DATE_TYPE_KEYWORD,
         seq(
           $.NUMBER_TYPE_KEYWORD,
-          optional(seq(
-            '(',
-            field('length', $.number),
-            optional(seq(',', field('precision', $.number))),
-            ')',
-          )),
+          optional(
+            seq(
+              "(",
+              field("length", $.number),
+              optional(seq(",", field("precision", $.number))),
+              ")",
+            ),
+          ),
         ),
         seq(
           $.STRING_TYPE_KEYWORD,
-          optional(seq('(', field('length', $.number), ')')),
+          optional(seq("(", field("length", $.number), ")")),
         ),
         $._qualified_name,
       ),
@@ -615,9 +614,9 @@ module.exports = grammar({
     _qualified_name: ($) => choice($.dotted_identifier, $.identifier),
 
     dotted_identifier: ($) =>
-      prec.right(seq($.identifier, repeat1(seq('.', $.identifier)))),
+      prec.right(seq($.identifier, repeat1(seq(".", $.identifier)))),
 
-    parameter: ($) => seq('&', $.identifier),
+    parameter: ($) => seq("&", $.identifier),
 
     boolean: ($) => choice($.TRUE_KEYWORD, $.FALSE_KEYWORD),
 
@@ -627,9 +626,9 @@ module.exports = grammar({
 
     not_operator: ($) => $.NOT_KEYWORD,
 
-    sign_operator: () => token(choice('+', '-')),
+    sign_operator: () => token(choice("+", "-")),
 
-    comparison_operator: () => token(choice('<>', '<=', '>=', '=', '<', '>')),
+    comparison_operator: () => token(choice("<>", "<=", ">=", "=", "<", ">")),
 
     number: () => /\d+(\.\d+)?/,
 
@@ -642,7 +641,7 @@ module.exports = grammar({
         '"',
       ),
 
-    line_comment: () => token(seq('//', /.*/)),
+    line_comment: () => token(seq("//", /.*/)),
 
     identifier: () => token(prec(-1, /[a-zA-Zа-яА-ЯёЁ_][a-zA-Zа-яА-ЯёЁ0-9_]*/)),
 
@@ -653,79 +652,79 @@ module.exports = grammar({
         alias($.ADD_KEYWORD, $.identifier),
       ),
 
-    SELECT_KEYWORD: () => keyword('выбрать', 'select'),
-    EMPTY_TABLE_KEYWORD: () => keyword('пустаятаблица', 'emptytable'),
-    ALLOWED_KEYWORD: () => keyword('разрешенные', 'allowed'),
-    DISTINCT_KEYWORD: () => keyword('различные', 'distinct'),
-    TOP_KEYWORD: () => keyword('первые', 'top'),
-    INTO_KEYWORD: () => keyword('поместить', 'into'),
-    ADD_KEYWORD: () => keyword('добавить', 'add'),
-    DESTROY_KEYWORD: () => keyword('уничтожить', 'drop'),
-    FROM_KEYWORD: () => keyword('из', 'from'),
-    INDEX_KEYWORD: () => keyword('индексировать', 'index'),
-    BY_KEYWORD: () => keyword('по', 'by'),
-    WHERE_KEYWORD: () => keyword('где', 'where'),
-    GROUP_KEYWORD: () => keyword('сгруппировать', 'group'),
-    HAVING_KEYWORD: () => keyword('имеющие', 'having'),
-    FOR_KEYWORD: () => keyword('для', 'for'),
-    UPDATE_KEYWORD: () => keyword('изменения', 'update'),
-    OF_KEYWORD: () => keyword('of'),
-    AS_KEYWORD: () => keyword('как', 'as'),
-    TRUE_KEYWORD: () => keyword('истина', 'true'),
-    FALSE_KEYWORD: () => keyword('ложь', 'false'),
-    NULL_KEYWORD: () => keyword('null'),
-    UNDEFINED_KEYWORD: () => keyword('неопределено', 'undefined'),
-    AND_KEYWORD: () => keyword('и', 'and'),
-    OR_KEYWORD: () => keyword('или', 'or'),
-    NOT_KEYWORD: () => keyword('не', 'not'),
-    IN_KEYWORD: () => keyword('в', 'in'),
-    HIERARCHY_KEYWORD: () => keyword('иерархии', 'иерархия', 'hierarchy'),
-    BETWEEN_KEYWORD: () => keyword('между', 'between'),
-    LIKE_KEYWORD: () => keyword('подобно', 'like'),
-    SPECIALCHAR_KEYWORD: () => keyword('спецсимвол', 'escape'),
-    IS_KEYWORD: () => keyword('есть', 'is'),
-    REFERENCE_KEYWORD: () => keyword('ссылка', 'reference'),
-    INNER_KEYWORD: () => keyword('внутреннее', 'inner'),
-    LEFT_KEYWORD: () => keyword('левое', 'left'),
-    RIGHT_KEYWORD: () => keyword('правое', 'right'),
-    FULL_KEYWORD: () => keyword('полное', 'full'),
-    OUTER_KEYWORD: () => keyword('внешнее', 'outer'),
-    JOIN_KEYWORD: () => keyword('соединение', 'join'),
-    ON_KEYWORD: () => keyword('по', 'on'),
-    CASE_KEYWORD: () => keyword('выбор', 'case'),
-    WHEN_KEYWORD: () => keyword('когда', 'when'),
-    THEN_KEYWORD: () => keyword('тогда', 'then'),
-    ELSE_KEYWORD: () => keyword('иначе', 'else'),
-    END_KEYWORD: () => keyword('конец', 'end'),
-    CAST_KEYWORD: () => keyword('выразить', 'cast'),
-    DATETIME_KEYWORD: () => keyword('датавремя', 'datetime'),
-    TYPE_KEYWORD: () => keyword('тип', 'type'),
+    SELECT_KEYWORD: () => keyword("выбрать", "select"),
+    EMPTY_TABLE_KEYWORD: () => keyword("пустаятаблица", "emptytable"),
+    ALLOWED_KEYWORD: () => keyword("разрешенные", "allowed"),
+    DISTINCT_KEYWORD: () => keyword("различные", "distinct"),
+    TOP_KEYWORD: () => keyword("первые", "top"),
+    INTO_KEYWORD: () => keyword("поместить", "into"),
+    ADD_KEYWORD: () => keyword("добавить", "add"),
+    DESTROY_KEYWORD: () => keyword("уничтожить", "drop"),
+    FROM_KEYWORD: () => keyword("из", "from"),
+    INDEX_KEYWORD: () => keyword("индексировать", "index"),
+    BY_KEYWORD: () => keyword("по", "by"),
+    WHERE_KEYWORD: () => keyword("где", "where"),
+    GROUP_KEYWORD: () => keyword("сгруппировать", "group"),
+    HAVING_KEYWORD: () => keyword("имеющие", "having"),
+    FOR_KEYWORD: () => keyword("для", "for"),
+    UPDATE_KEYWORD: () => keyword("изменения", "update"),
+    OF_KEYWORD: () => keyword("of"),
+    AS_KEYWORD: () => keyword("как", "as"),
+    TRUE_KEYWORD: () => keyword("истина", "true"),
+    FALSE_KEYWORD: () => keyword("ложь", "false"),
+    NULL_KEYWORD: () => keyword("null"),
+    UNDEFINED_KEYWORD: () => keyword("неопределено", "undefined"),
+    AND_KEYWORD: () => keyword("и", "and"),
+    OR_KEYWORD: () => keyword("или", "or"),
+    NOT_KEYWORD: () => keyword("не", "not"),
+    IN_KEYWORD: () => keyword("в", "in"),
+    HIERARCHY_KEYWORD: () => keyword("иерархии", "иерархия", "hierarchy"),
+    BETWEEN_KEYWORD: () => keyword("между", "between"),
+    LIKE_KEYWORD: () => keyword("подобно", "like"),
+    SPECIALCHAR_KEYWORD: () => keyword("спецсимвол", "escape"),
+    IS_KEYWORD: () => keyword("есть", "is"),
+    REFERENCE_KEYWORD: () => keyword("ссылка", "reference"),
+    INNER_KEYWORD: () => keyword("внутреннее", "inner"),
+    LEFT_KEYWORD: () => keyword("левое", "left"),
+    RIGHT_KEYWORD: () => keyword("правое", "right"),
+    FULL_KEYWORD: () => keyword("полное", "full"),
+    OUTER_KEYWORD: () => keyword("внешнее", "outer"),
+    JOIN_KEYWORD: () => keyword("соединение", "join"),
+    ON_KEYWORD: () => keyword("по", "on"),
+    CASE_KEYWORD: () => keyword("выбор", "case"),
+    WHEN_KEYWORD: () => keyword("когда", "when"),
+    THEN_KEYWORD: () => keyword("тогда", "then"),
+    ELSE_KEYWORD: () => keyword("иначе", "else"),
+    END_KEYWORD: () => keyword("конец", "end"),
+    CAST_KEYWORD: () => keyword("выразить", "cast"),
+    DATETIME_KEYWORD: () => keyword("датавремя", "datetime"),
+    TYPE_KEYWORD: () => keyword("тип", "type"),
     TYPE_VALUE_FUNCTION_NAME: () => token(prec(2, /типзначения/i)),
-    VALUE_KEYWORD: () => keyword('значение', 'value'),
-    BOOLEAN_TYPE_KEYWORD: () => keyword('булево', 'boolean'),
-    NUMBER_TYPE_KEYWORD: () => keyword('число', 'number'),
-    STRING_TYPE_KEYWORD: () => keyword('строка', 'string'),
-    DATE_TYPE_KEYWORD: () => keyword('дата', 'date'),
-    UNION_KEYWORD: () => keyword('объединить', 'union'),
-    ALL_KEYWORD: () => keyword('все', 'all'),
-    ORDER_KEYWORD: () => keyword('упорядочить', 'order'),
-    AUTO_ORDER_KEYWORD: () => keyword('автоупорядочивание', 'autoorder'),
-    TOTALS_KEYWORD: () => keyword('итоги', 'totals'),
-    PERIODS_KEYWORD: () => keyword('периодами', 'periods'),
-    SECOND_KEYWORD: () => keyword('секунда', 'second'),
-    MINUTE_KEYWORD: () => keyword('минута', 'minute'),
-    HOUR_KEYWORD: () => keyword('час', 'hour'),
-    DAY_KEYWORD: () => keyword('день', 'day'),
-    WEEK_KEYWORD: () => keyword('неделя', 'week'),
-    MONTH_KEYWORD: () => keyword('месяц', 'month'),
-    QUARTER_KEYWORD: () => keyword('квартал', 'quarter'),
-    YEAR_KEYWORD: () => keyword('год', 'year'),
-    TEN_DAYS_KEYWORD: () => keyword('декада', 'tendays'),
-    HALF_YEAR_KEYWORD: () => keyword('полугодие', 'halfyear'),
-    ASC_KEYWORD: () => keyword('возр', 'asc'),
-    DESC_KEYWORD: () => keyword('убыв', 'desc'),
-    GENERAL_KEYWORD: () => keyword('общие', 'overall'),
-    ONLY_KEYWORD: () => keyword('только', 'only'),
+    VALUE_KEYWORD: () => keyword("значение", "value"),
+    BOOLEAN_TYPE_KEYWORD: () => keyword("булево", "boolean"),
+    NUMBER_TYPE_KEYWORD: () => keyword("число", "number"),
+    STRING_TYPE_KEYWORD: () => keyword("строка", "string"),
+    DATE_TYPE_KEYWORD: () => keyword("дата", "date"),
+    UNION_KEYWORD: () => keyword("объединить", "union"),
+    ALL_KEYWORD: () => keyword("все", "all"),
+    ORDER_KEYWORD: () => keyword("упорядочить", "order"),
+    AUTO_ORDER_KEYWORD: () => keyword("автоупорядочивание", "autoorder"),
+    TOTALS_KEYWORD: () => keyword("итоги", "totals"),
+    PERIODS_KEYWORD: () => keyword("периодами", "periods"),
+    SECOND_KEYWORD: () => keyword("секунда", "second"),
+    MINUTE_KEYWORD: () => keyword("минута", "minute"),
+    HOUR_KEYWORD: () => keyword("час", "hour"),
+    DAY_KEYWORD: () => keyword("день", "day"),
+    WEEK_KEYWORD: () => keyword("неделя", "week"),
+    MONTH_KEYWORD: () => keyword("месяц", "month"),
+    QUARTER_KEYWORD: () => keyword("квартал", "quarter"),
+    YEAR_KEYWORD: () => keyword("год", "year"),
+    TEN_DAYS_KEYWORD: () => keyword("декада", "tendays"),
+    HALF_YEAR_KEYWORD: () => keyword("полугодие", "halfyear"),
+    ASC_KEYWORD: () => keyword("возр", "asc"),
+    DESC_KEYWORD: () => keyword("убыв", "desc"),
+    GENERAL_KEYWORD: () => keyword("общие", "overall"),
+    ONLY_KEYWORD: () => keyword("только", "only"),
   },
 });
 

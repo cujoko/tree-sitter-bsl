@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-bsl",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "1C (BSL) grammar for tree-sitter",
   "repository": "https://github.com/cujoko/tree-sitter-bsl",
   "license": "MIT",

@@ -115,15 +115,18 @@ Current syntax coverage:
 - optional field aliases with and without `КАК`;
 - dotted field and table names;
 - `ИЗ` with comma-separated sources, optional aliases, virtual-table
-  parameters, nested query sources, nested table sources and joins;
+  parameters, nested query sources, nested table sources and joins,
+  including nested joins with deferred `ПО` conditions;
 - clauses `ПОМЕСТИТЬ`, `ДОБАВИТЬ`, `ГДЕ`, `СГРУППИРОВАТЬ ПО`, `ИМЕЮЩИЕ`,
   `ДЛЯ ИЗМЕНЕНИЯ`, `ИНДЕКСИРОВАТЬ ПО`;
 - top-level `ОБЪЕДИНИТЬ`, `ОБЪЕДИНИТЬ ВСЕ`, `УПОРЯДОЧИТЬ ПО`,
   `АВТОУПОРЯДОЧИВАНИЕ` and `ИТОГИ`;
 - standalone `УНИЧТОЖИТЬ <temporary table>`;
-- semicolon-separated query packages;
-- expressions: comparison, boolean, arithmetic, unary, membership, `МЕЖДУ`,
-  `ПОДОБНО`, `ЕСТЬ NULL`, `ССЫЛКА`, `ВЫБОР`, `ВЫРАЗИТЬ`;
+- semicolon-separated query packages that may mix queries and
+  `УНИЧТОЖИТЬ`;
+- expressions: comparison, boolean, arithmetic, unary, membership
+  (including tuple left-hand sides), `МЕЖДУ`, `ПОДОБНО`, `ЕСТЬ NULL`,
+  `ССЫЛКА`, `ВЫБОР`, `ВЫРАЗИТЬ` and field access after `ВЫРАЗИТЬ(...)`;
 - literals: number, string, date, `ДАТАВРЕМЯ(...)`, `ТИП(...)`,
   `ЗНАЧЕНИЕ(...)`, `NULL`, `ИСТИНА`, `ЛОЖЬ`, `НЕОПРЕДЕЛЕНО`;
 - query parameters such as `&Параметр`;

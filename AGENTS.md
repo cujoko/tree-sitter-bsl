@@ -30,11 +30,10 @@ The repository owns grammar behavior and parser-facing contracts:
   `grammars/bsl/src/parser.c` and BSL
   binding-facing generated artifacts when BSL grammar generation is part of the
   change.
-- `grammars/sdbl/grammar.js` as the planned SDBL source grammar.
-- `grammars/sdbl/test/corpus/*.sdbl` as the planned SDBL behavioral regression
-  contract.
+- `grammars/sdbl/grammar.js` as the SDBL source grammar.
+- `grammars/sdbl/test/corpus/*.sdbl` as the SDBL behavioral regression contract.
 - `grammars/sdbl/src/grammar.json`, `grammars/sdbl/src/node-types.json` and
-  `grammars/sdbl/src/parser.c` as planned SDBL generated artifacts when SDBL
+  `grammars/sdbl/src/parser.c` as SDBL generated artifacts when SDBL
   grammar generation is part of the change.
 - `spec/sdbl-syntax.zip` as the packed vendored source snapshot for 1C
   query-language syntax. Unpack to `spec/sdbl-syntax/` when reading pages.
@@ -61,7 +60,7 @@ For non-trivial grammar work, follow this order:
    `grammars/bsl/grammar.js` rules.
    For SDBL work, also read `spec/sdbl-query-language.md`,
    `spec/sdbl-source-evidence.md` and the relevant `grammars/sdbl/grammar.js`
-   rules once that file exists.
+   rules.
 2. Add or update focused corpus cases before changing grammar behavior.
 3. Implement only the active syntax behavior and its direct verification.
 4. Regenerate parser artifacts when the grammar changes.
@@ -108,8 +107,7 @@ Normal validation:
 - `npm test` verifies that the Node binding loads.
 - `tree-sitter test -p grammars/bsl` validates BSL corpus expectations when the
   local CLI works.
-- `tree-sitter test -p grammars/sdbl` validates SDBL corpus expectations after
-  the SDBL grammar scaffold exists.
+- `tree-sitter test -p grammars/sdbl` validates SDBL corpus expectations.
 - Targeted Node binding probes are acceptable only as temporary diagnostics when
   the tree-sitter CLI is blocked on the current host.
 
@@ -240,8 +238,8 @@ Russian text costs more tokens per character than English.
   module, a long doc, a log.
   - Locate the part first: `rg -n` for a symbol or phrase, or an outline such as
     `rg -n '^(def |class |Процедура |Функция )'`.
-  - Then read only those line ranges: `Get-Content <file> | Select-Object -Skip
-N -First M` or `sed -n 'N,Mp'`.
+  - Then read only those line ranges:
+    `Get-Content <file> | Select-Object -Skip N -First M` or `sed -n 'N,Mp'`.
   - Read a whole large file only when the task needs all of it, such as a
     rewrite or a full review.
 - **Shared rules block in `AGENTS.md`.** The part between the

@@ -1,130 +1,119 @@
 ---
 name: tree-sitter-bsl-grammar
 description: >-
-  Grammar authoring for tree-sitter-bsl: grammar.js structure, adding BSL constructs,
-  corpus test format, build/generate workflow, Python bindings, and version bumping.
-  Use when editing grammar.js, adding corpus tests, debugging parse trees, or releasing
-  a new grammar version.
+  Grammar authoring for tree-sitter-bsl: layout of the BSL and SDBL grammars, grammar.js
+  structure, adding BSL constructs, corpus test format, generate/test commands, bindings,
+  and version bumping. Use when editing grammars/*/grammar.js, adding corpus tests,
+  debugging parse trees, or releasing a new grammar version.
 ---
 
 # tree-sitter-bsl: грамматика и рабочий процесс
 
-## Роль проекта
+Порядок работы, правила грамматики и тестов — в `AGENTS.md` (разделы «Implementation
+Order», «Grammar Rules», «Testing Rules»). Здесь — устройство репозитория и команды.
 
-**tree-sitter-bsl** — [tree-sitter](https://tree-sitter.github.io/) грамматика для **1C:Enterprise BSL** (рус./англ. ключевые слова, case-insensitive). Грамматика определяется в `grammar.js`; `src/parser.c` **генерируется автоматически** и вручную не редактируется.
+## Две грамматики
+
+Репозиторий держит две независимые грамматики (`docs/decisions/0003-use-per-grammar-directories.md`):
+
+- **`bsl`** — 1C:Enterprise BSL (рус./англ. ключевые слова, case-insensitive), файлы `bsl`, `osl`;
+- **`sdbl`** — язык запросов 1С (`docs/decisions/0001-add-sdbl-query-language-grammar.md`),
+  контракт — `spec/sdbl-query-language.md`, источники — `spec/sdbl-source-evidence.md`.
+
+Внедрение SDBL в строки BSL — только через injection-запросы
+(`docs/decisions/0002-define-bsl-string-sdbl-injection-contract.md`), не через саму грамматику BSL.
 
 ## Ключевые файлы
 
-| Область | Файл | Роль |
+| Область | Путь | Роль |
 |---------|------|------|
-| **Грамматика** | `grammar.js` | Единственный файл для редактирования конструкций BSL |
-| **Генерированный парсер** | `src/parser.c` | Генерируется `tree-sitter generate`, коммитится вместе с grammar.js |
-| **Конфиг** | `tree-sitter.json` | Имя (`bsl`), расширения (`bsl`, `osl`), enabled bindings |
-| **Python binding** | `bindings/python/tree_sitter_bsl/` | `Language()` функция, `_binding` extension |
-| **Node binding** | `bindings/node/` | N-API addon |
-| **Rust binding** | `bindings/rust/` | `LanguageFn` |
-| **Corpus тесты** | `test/corpus/*.bsl` | Эталонные S-expression деревья |
+| **Грамматика** | `grammars/<g>/grammar.js` | Единственное место для правки конструкций |
+| **Генерированный парсер** | `grammars/<g>/src/parser.c`, `grammar.json`, `node-types.json` | Результат `tree-sitter generate`, коммитится вместе с `grammar.js` |
+| **Corpus-тесты** | `grammars/<g>/test/corpus/*.bsl` / `*.sdbl` | Эталонные S-expression деревья |
+| **Queries** | `grammars/<g>/queries/*.scm` | Подсветка и injections для редакторов |
+| **Конфиг** | `tree-sitter.json` | Обе грамматики, версия, включённые bindings |
+| **Bindings** | `bindings/python/`, `bindings/node/`, `bindings/rust/` | Интеграция пакета, не место для логики грамматики |
+| **Журнал работ** | `spec/IMPLEMENTATION_TODO.md` | Активный план; история — `spec/archive/` |
 
-## Структура `grammar.js`
+`<g>` — `bsl` или `sdbl`. `src/parser.c` вручную не редактируется.
+
+## Структура `grammars/bsl/grammar.js`
 
 ```js
 module.exports = grammar({
   name: 'bsl',
-  conflicts: ($) => [[$.parenthesized_expression, $.arguments]],  // объявленный конфликт
   extras: ($) => [/\s/, $.line_comment],
+  conflicts: ($) => [[$._plain_variable_spec, $._exported_variable_spec]],
+  word: ($) => $.identifier,
   reserved: { global: ($) => reservedKeywords($) },  // ключевые слова ≠ identifier
-  rules: { source_file: ($) => ..., ... }
+  rules: { source_file: ($) => repeat($._definition), ... }
 })
 ```
 
-**Ключевые секции:**
-- `PREC` — числовые приоритеты выражений (`LOGICAL_OR` … `ASSIGNMENT`, `AWAIT`)
-- `CORE_KEYWORDS` — пары `[русский, английский]`; `buildKeywords()` создаёт правила `IF_KEYWORD`, `WHILE_KEYWORD` и т.д.
-- `PREPROC_KEYWORDS` — препроцессор: `#Если`/`#if`, `#Область`, аннотации `&НаКлиенте`, `&Перед(...)`
-- Ключевые слова в `reservedKeywords` не могут быть `identifier` на верхнем уровне
+- `PREC` — числовые приоритеты выражений.
+- `CORE_KEYWORDS` — пары `[русский, английский]`; `buildKeywords()` создаёт правила
+  `IF_KEYWORD`, `WHILE_KEYWORD` и т.д.
+- `PREPROC_KEYWORDS` — препроцессор (`#Если`/`#If`, `#Область`) и аннотации.
+- Всё, что попало в `reservedKeywords`, не может быть `identifier`.
 
-## Добавление новой конструкции BSL
+## Добавление конструкции BSL
 
-1. **Новые ключевые слова** → добавить в `CORE_KEYWORDS` или `PREPROC_KEYWORDS` (или как литерал в правиле)
-2. **Новое правило** → добавить в `rules` через `seq`, `choice`, `repeat`, `optional`, `field`, `alias`, `prec`
-3. **Зарезервированность** → если токен не должен быть identifier, убедиться что он попадает в `reservedKeywords` через `buildKeywords`
-4. **Regenerate:** `tree-sitter generate` — обновляет `src/parser.c` и `src/*.json`
-5. **Corpus тест** → добавить / обновить `test/corpus/*.bsl`
-6. **Запустить:** `tree-sitter test`
-
-```
-❌ НИКОГДА не редактировать src/parser.c вручную
-✅ Всегда: grammar.js → tree-sitter generate → tree-sitter test → commit оба файла
-```
+1. Corpus-случай в `grammars/bsl/test/corpus/*.bsl` — до правки грамматики.
+2. Ключевое слово → `CORE_KEYWORDS` / `PREPROC_KEYWORDS`; правило → `rules`
+   (`seq`, `choice`, `repeat`, `optional`, `field`, `alias`, `prec`).
+3. Если токен не должен быть идентификатором — проверить, что он попадает в `reservedKeywords`.
+4. `npm run generate:bsl` → `npm run test:corpus:bsl`.
+5. Закоммитить `grammar.js` вместе с `src/*`.
 
 ## Формат corpus-тестов
 
-Файлы в `test/corpus/*.bsl`:
-
 ```
 ================
-Имя теста (человекочитаемое)
+Присвоение переменной
 ================
-// BSL-исходник
-Процедура Тест()
-    А = 1;
-КонецПроцедуры
+
+А = 1;
+
 ---
 
 (source_file
-  (procedure_definition
-    name: (identifier)
-    (statement_block
-      (assignment
-        left: (identifier)
-        right: (number)))))
+  (assignment_statement ...))
 ```
 
-- Разделитель теста: строка из `=`
-- Источник и S-expression разделены `---`
-- Ошибочные/неполные деревья: `(MISSING ")")` в expected tree
-- **Запуск:** `tree-sitter test`
+- Заголовок теста обрамлён строками из `=`; исходник и дерево разделены `---`.
+- Незавершённый ввод: `(MISSING ...)` / `(ERROR ...)` в ожидаемом дереве.
+- Ожидаемое дерево копировать из вывода `tree-sitter test`/`parse`, а не писать по памяти.
 
-Существующие corpus-файлы: `assignment.bsl`, `expressions.bsl`, `access.bsl`, `methods.bsl`, `execute.bsl`, `incomplete-expressions.bsl`.
-
-**Nota bene:** правила для `goto`/`~label` в grammar.js есть, но corpus-тестов под них нет — хорошая область для добавления.
-
-## Поддерживаемые конструкции BSL
-
-**Топ-уровень:** процедуры, функции, `Перем`/`Var`, любые операторы.
-
-**Операторы:** `Если`/`If`, `Пока`/`While`, `Для`/`For` (числовой и `Для Каждого`/`For Each`), `Попытка`/`Try`…`Исключение`/`Except`, `Возврат`/`Return`, `ВызватьИсключение`/`Raise`, **`Перейти`/`Goto` + `~метка:`**, `Прервать`/`Break`, `Продолжить`/`Continue`, `Ждать`/`Await`, `ДобавитьОбработчик`/`УдалитьОбработчик`, `Выполнить`/`Execute`, присваивание, вызов.
-
-**Выражения:** числа, даты `'\d{8,14}'`, строки (`""`, `|`-продолжение), `Истина`/`Ложь`, `Неопределено`/`Null`, унарные, бинарные, сравнения, `?( cond, a, b )`, `Новый`/`New`, вызовы методов, `.` доступ к свойствам, `[ ]` индекс.
-
-## Команды сборки и тестирования
+## Команды
 
 | Что | Команда |
 |-----|---------|
-| Регенерировать парсер | `tree-sitter generate` |
-| Corpus-тесты | `tree-sitter test` |
-| Node binding тесты | `npm test` |
-| Python binding тест | `python -m unittest bindings/python/tests/test_binding.py` |
-| Lint grammar.js | `npm run lint` |
-| Playground (WASM) | `npm start` (после `tree-sitter build --wasm`) |
+| Регенерировать парсер | `npm run generate` (или `generate:bsl` / `generate:sdbl`) |
+| Corpus-тесты | `npm run test:corpus` (или `test:corpus:bsl` / `test:corpus:sdbl`) |
+| Системный CLI | `tree-sitter test -p grammars/bsl`, `tree-sitter test -p grammars/sdbl` |
+| Разобрать файл | `npm run parse:bsl -- <file>` / `npm run parse:sdbl -- <file>` |
+| Node binding | `npm test` (собирает addon и грузит обе грамматики) |
+| Python binding | `python -m unittest bindings/python/tests/test_binding.py` в `.dev`-окружении |
+| Lint | `npm run lint` |
+| Всё сразу | `npm run test:all` |
+| Playground | `npm start` (BSL), `npm run start:sdbl` |
 
-## Python bindings: как использовать
+## Python binding
 
 ```python
-import tree_sitter_bsl
 import tree_sitter
+import tree_sitter_bsl
 
-parser = tree_sitter.Parser(tree_sitter_bsl.Language())
-tree = parser.parse(b"// BSL source")
+bsl = tree_sitter.Parser(tree_sitter_bsl.Language())
+sdbl = tree_sitter.Parser(tree_sitter_bsl.SDBLLanguage())
 ```
 
-- **`tree_sitter_bsl.Language()`** — публичный хелпер; внутри вызывает `_binding.language()` (C extension)
-- Устанавливается через `pip install tree-sitter-bsl` или `pip install -e .` из репозитория
-- В codemask-1c подключается как `file:///` зависимость через PDM/pipx
+Потребитель в workspace — `codemask-1c-core` (`tree-sitter-bsl>=0.1.8`; в `.dev` —
+editable `file:///` на этот checkout). Пакет не публикуется в публичные реестры; установка —
+из git (см. `README.md`).
 
-## Версии и бамп
+## Версия и бамп
 
-- Версия в `pyproject.toml` и `package.json` — источник истины для релизов
-- `tree-sitter.json` и `Cargo.toml` могут отставать — синхронизировать при публикации
-- Текущая версия: **0.1.7**
-- После grammar.js изменений обновлять `src/parser.c` (результат `tree-sitter generate`) и коммитить вместе
+Версия одна на весь пакет: `bindings/python/tree_sitter_bsl/_version.py` (источник для
+`pyproject.toml`), `package.json`, `Cargo.toml`, `tree-sitter.json` (`metadata.version`).
+При релизе менять все четыре и дописывать `RELEASE_NOTES.md`.

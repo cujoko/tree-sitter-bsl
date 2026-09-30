@@ -3207,6 +3207,54 @@
         "flags": "i"
       }
     },
+    "preproc": {
+      "type": "TOKEN",
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "PATTERN",
+            "value": "#Вставка",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "#Insert",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "#КонецВставки",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "#EndInsert",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "#Удаление",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "#Delete",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "#КонецУдаления",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "#EndDelete",
+            "flags": "i"
+          }
+        ]
+      }
+    },
     "preprocessor": {
       "type": "CHOICE",
       "members": [
@@ -3316,110 +3364,6 @@
               "name": "PREPROC_ENDIF_KEYWORD"
             }
           ]
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#Вставка",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#Insert",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#КонецВставки",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#EndInsert",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#Удаление",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#Delete",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#КонецУдаления",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "#EndDelete",
-              "flags": "i"
-            }
-          },
-          "named": true,
-          "value": "preproc"
         },
         {
           "type": "SEQ",
@@ -3969,6 +3913,10 @@
     {
       "type": "SYMBOL",
       "name": "line_comment"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "preproc"
     }
   ],
   "conflicts": [

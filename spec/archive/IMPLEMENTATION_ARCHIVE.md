@@ -5,6 +5,31 @@ active `spec/IMPLEMENTATION_TODO.md` ledger. Keep this file historical: new
 work belongs in `spec/IMPLEMENTATION_TODO.md` until it is completed and
 accepted.
 
+## Archived on 2026-10-01
+
+### BSL grammar coverage
+
+#### Parse extension change-and-control directives as extras
+
+Status: done (v0.1.10).
+
+Problem:
+
+- In `&ИзменениеИКонтроль` methods the diff markers `#Вставка` / `#Удаление`
+  (and their `#Конец…` / English forms) can appear mid-construct, e.g.
+  splitting a multi-line `Возврат` expression. They were modelled as
+  statement-level `preprocessor` nodes, so a directive between two operands
+  cut the expression and produced `ERROR` nodes.
+
+Result:
+
+- Moved the eight change-and-control directives to `extras` as a `preproc`
+  token, so they parse anywhere (like comments) without breaking the
+  surrounding construct. `#Если` / `#Область` keep their structured form.
+- Added corpus sections in `grammars/bsl/test/corpus/preprocessors.bsl` for a
+  mid-expression case and a body-statement case; regenerated `grammars/bsl/src`.
+- Node-shape change recorded in `RELEASE_NOTES.md` v0.1.10.
+
 ## Archived on 2026-05-09
 
 ### BSL grammar coverage

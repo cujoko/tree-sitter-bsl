@@ -1,3 +1,17 @@
+## v0.1.10
+
+### Parser
+
+- Parse the extension change-and-control directives `#Вставка` / `#Insert`,
+  `#КонецВставки` / `#EndInsert`, `#Удаление` / `#Delete`,
+  `#КонецУдаления` / `#EndDelete` as `extras` (like comments) instead of
+  statement-level `preprocessor` nodes. In `&ИзменениеИКонтроль` methods these
+  markers can appear mid-expression (e.g. splitting a multi-line `Возврат`),
+  which previously produced `ERROR` nodes. They now parse anywhere as `preproc`
+  extra nodes without breaking the surrounding construct. **Node-shape change:**
+  a change directive is no longer a `(preprocessor (preproc))` statement but a
+  standalone `(preproc)` extra. `#Если` / `#Область` keep their structured form.
+
 ## v0.1.9
 
 ### Parser

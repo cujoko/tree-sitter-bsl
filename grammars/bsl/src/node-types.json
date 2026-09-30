@@ -1592,10 +1592,6 @@
           "named": true
         },
         {
-          "type": "preproc",
-          "named": true
-        },
-        {
           "type": "preprocessor",
           "named": true
         },
@@ -2743,7 +2739,8 @@
   },
   {
     "type": "preproc",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "string_content",

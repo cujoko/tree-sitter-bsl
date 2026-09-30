@@ -209,3 +209,105 @@
     variable: (variable_spec
       name: (identifier))
     export: (EXPORT_KEYWORD)))
+
+====================================================================
+&ИзменениеИКонтроль: #Вставка/#Удаление посреди выражения (extras)
+====================================================================
+
+&ИзменениеИКонтроль("Метод")
+Функция Ф(З)
+  Возврат З = 36
+#Удаление
+    И З = "старое"
+#КонецУдаления
+#Вставка
+    И З = "новое"
+#КонецВставки
+    И Истина;
+КонецФункции
+
+---
+
+(source_file
+  (preprocessor
+    (annotation)
+    (string
+      (string_content)))
+  (function_definition
+    (FUNCTION_KEYWORD)
+    name: (identifier)
+    parameters: (parameters
+      parameter: (parameter
+        name: (identifier)))
+    (return_statement
+      (RETURN_KEYWORD)
+      result: (expression
+        (binary_expression
+          left: (expression
+            (binary_expression
+              left: (expression
+                (binary_expression
+                  left: (expression
+                    (binary_expression
+                      left: (expression
+                        (identifier))
+                      operator: (operator)
+                      right: (expression
+                        (const_expression
+                          (number)))))
+                  (preproc)
+                  operator: (operator)
+                  right: (expression
+                    (binary_expression
+                      left: (expression
+                        (identifier))
+                      operator: (operator)
+                      right: (expression
+                        (const_expression
+                          (string
+                            (string_content))))))))
+              (preproc)
+              (preproc)
+              operator: (operator)
+              right: (expression
+                (binary_expression
+                  left: (expression
+                    (identifier))
+                  operator: (operator)
+                  right: (expression
+                    (const_expression
+                      (string
+                        (string_content))))))))
+          (preproc)
+          operator: (operator)
+          right: (expression
+            (const_expression
+              (boolean
+                (TRUE_KEYWORD)))))))
+    (ENDFUNCTION_KEYWORD)))
+
+====================================================================
+#Вставка/#КонецВставки вокруг оператора в теле процедуры
+====================================================================
+
+Процедура П()
+#Вставка
+  А = 1;
+#КонецВставки
+КонецПроцедуры
+
+---
+
+(source_file
+  (procedure_definition
+    (PROCEDURE_KEYWORD)
+    name: (identifier)
+    parameters: (parameters)
+    (preproc)
+    (assignment_statement
+      left: (identifier)
+      right: (expression
+        (const_expression
+          (number))))
+    (preproc)
+    (ENDPROCEDURE_KEYWORD)))

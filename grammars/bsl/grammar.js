@@ -123,6 +123,20 @@ function memberNameKeywords($) {
 }
 
 const Preprocessor = {
+  // #Вставка / #Удаление и их концы (обе языковые формы). Это extras-маркеры
+  // diff-регионов расширений (см. `extras`), а не операторы: так они не рвут
+  // выражения и операторы, через которые проходят.
+  preproc: ($) =>
+    keyword(
+      '#Вставка',
+      '#Insert',
+      '#КонецВставки',
+      '#EndInsert',
+      '#Удаление',
+      '#Delete',
+      '#КонецУдаления',
+      '#EndDelete',
+    ),
   preprocessor: ($) => {
     const region = seq(
       $.PREPROC_REGION_KEYWORD,
@@ -146,19 +160,6 @@ const Preprocessor = {
       ),
       optional(seq($.PREPROC_ELSE_KEYWORD, repeat($._definition))),
       $.PREPROC_ENDIF_KEYWORD,
-    );
-
-    const preproc_change = [
-      'Вставка',
-      'Insert',
-      'КонецВставки',
-      'EndInsert',
-      'Удаление',
-      'Delete',
-      'КонецУдаления',
-      'EndDelete',
-    ].map((annotation) =>
-      alias(token(caseInsensitive('#' + annotation)), $.preproc),
     );
 
     const annotations = [
@@ -195,7 +196,6 @@ const Preprocessor = {
     return choice(
       region,
       preproc_if,
-      ...preproc_change,
       ...annotations,
       ...compilation_directives,
     );
@@ -205,7 +205,11 @@ const Preprocessor = {
 module.exports = grammar({
   name: 'bsl',
 
-  extras: ($) => [/\s/, $.line_comment],
+  // Директивы «изменения и контроля» расширений (#Вставка/#Удаление и их
+  // концы) — маркеры diff-регионов относительно типового метода. Они могут
+  // стоять где угодно, в т.ч. посреди выражения, поэтому разбираются как extras
+  // (подобно комментариям), а не как операторы, чтобы не разрывать конструкции.
+  extras: ($) => [/\s/, $.line_comment, $.preproc],
 
   supertypes: ($) => [],
 

@@ -34,4 +34,4 @@ build-frontend = "build"
 version = {attr = "tree_sitter_bsl._version.__version__"}
 
 [tool.setuptools.package-dir]
-"" = "bindings/python"
+"" = "src"

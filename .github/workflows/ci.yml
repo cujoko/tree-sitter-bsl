@@ -27,7 +27,22 @@ jobs:
           test-rust: true
           test-node: true
           node-version: "22"
-          test-python: true
+          # Upstream action hardcodes bindings/python/tests; package is src-layout.
+          test-python: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Test Python binding
+        shell: bash
+        run: |
+          pip install -e ".[core]"
+          python -munittest discover -v -s tests
+
       - name: Parse examples
         uses: tree-sitter/parse-action@v4
         with:

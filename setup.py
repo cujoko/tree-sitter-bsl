@@ -7,7 +7,7 @@ from setuptools.command.bdist_wheel import bdist_wheel
 from setuptools.command.build import build
 
 sources = [
-    "bindings/python/tree_sitter_bsl/binding.c",
+    "src/tree_sitter_bsl/binding.c",
     "grammars/bsl/src/parser.c",
     "grammars/sdbl/src/parser.c",
 ]
@@ -48,8 +48,8 @@ class BdistWheel(bdist_wheel):
 
 
 setup(
-    packages=find_packages("bindings/python"),
-    package_dir={"": "bindings/python"},
+    packages=find_packages("src"),
+    package_dir={"": "src"},
     package_data={
         "tree_sitter_bsl": ["*.pyi", "py.typed", "queries/*/*.scm"],
     },

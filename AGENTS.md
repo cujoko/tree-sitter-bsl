@@ -37,8 +37,7 @@ The repository owns grammar behavior and parser-facing contracts:
   grammar generation is part of the change.
 - `spec/sdbl-syntax.zip` as the packed vendored source snapshot for 1C
   query-language syntax. Unpack to `spec/sdbl-syntax/` when reading pages.
-- Node and Rust bindings under `bindings/` only as parser package integration
-  surfaces; the Python package uses src-layout at `src/tree_sitter_bsl/`.
+- Node, Rust and Python bindings only as parser package integration surfaces.
 
 The repository does not own analyzer facts, diagnostics, metadata models, HBK
 facts, query tools, report formats or downstream product behavior. Keep those

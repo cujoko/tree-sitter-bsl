@@ -32,8 +32,7 @@ Order», «Grammar Rules», «Testing Rules»). Здесь — устройст�
 | **Corpus-тесты** | `grammars/<g>/test/corpus/*.bsl` / `*.sdbl` | Эталонные S-expression деревья |
 | **Queries** | `grammars/<g>/queries/*.scm` | Подсветка и injections для редакторов |
 | **Конфиг** | `tree-sitter.json` | Обе грамматики, версия, включённые bindings |
-| **Python package** | `src/tree_sitter_bsl/` | Python binding (src-layout, как остальные Python-репо workspace) |
-| **Bindings** | `bindings/node/`, `bindings/rust/` | Node/Rust интеграция, не место для логики грамматики |
+| **Bindings** | `bindings/python/`, `bindings/node/`, `bindings/rust/` | Интеграция пакета, не место для логики грамматики |
 | **Журнал работ** | `spec/IMPLEMENTATION_TODO.md` | Активный план; история — `spec/archive/` |
 
 `<g>` — `bsl` или `sdbl`. `src/parser.c` вручную не редактируется.
@@ -94,7 +93,7 @@ module.exports = grammar({
 | Системный CLI | `tree-sitter test -p grammars/bsl`, `tree-sitter test -p grammars/sdbl` |
 | Разобрать файл | `npm run parse:bsl -- <file>` / `npm run parse:sdbl -- <file>` |
 | Node binding | `npm test` (собирает addon и грузит обе грамматики) |
-| Python binding | `python -m unittest tests/test_binding.py` в `.dev`-окружении |
+| Python binding | `python -m unittest bindings/python/tests/test_binding.py` в `.dev`-окружении |
 | Lint | `npm run lint` |
 | Всё сразу | `npm run test:all` |
 | Playground | `npm start` (BSL), `npm run start:sdbl` |
@@ -115,6 +114,6 @@ editable `file:///` на этот checkout). Пакет не публикует�
 
 ## Версия и бамп
 
-Версия одна на весь пакет: `src/tree_sitter_bsl/_version.py` (источник для
+Версия одна на весь пакет: `bindings/python/tree_sitter_bsl/_version.py` (источник для
 `pyproject.toml`), `package.json`, `Cargo.toml`, `tree-sitter.json` (`metadata.version`).
 При релизе менять все четыре и дописывать `RELEASE_NOTES.md`.

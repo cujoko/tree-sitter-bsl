@@ -1,11 +1,3 @@
-## Unreleased
-
-### Packaging
-
-- Moved the Python package from `bindings/python/tree_sitter_bsl/` to
-  `src/tree_sitter_bsl/` (src-layout). Binding tests live in `tests/`.
-  Node and Rust bindings stay under `bindings/`.
-
 ## v0.1.10
 
 ### Parser

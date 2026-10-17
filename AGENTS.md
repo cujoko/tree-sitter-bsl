@@ -14,110 +14,21 @@ Shared agent guidance lives in `AGENTS.md` (this file) and `.agents/skills/`.
 
 # Project Rules for Agents
 
-These rules apply to the whole repository.
+`tree-sitter-bsl` holds the tree-sitter grammars for 1C BSL (`grammars/bsl`)
+and the 1C query language SDBL (`grammars/sdbl`). It owns grammar behavior and
+parser-facing contracts only, not analyzer facts, diagnostics, metadata models
+or downstream product behavior.
 
-## Project Context
-
-`tree-sitter-bsl` is a tree-sitter grammar repository for 1C BSL and, by
-`docs/decisions/0001-add-sdbl-query-language-grammar.md`, a separate `sdbl`
-grammar for the 1C query language.
-
-The repository owns grammar behavior and parser-facing contracts:
-
-- `grammars/bsl/grammar.js` as the BSL source grammar.
-- `grammars/bsl/test/corpus/*.bsl` as the BSL behavioral regression contract.
-- `grammars/bsl/src/grammar.json`, `grammars/bsl/src/node-types.json`,
-  `grammars/bsl/src/parser.c` and BSL
-  binding-facing generated artifacts when BSL grammar generation is part of the
-  change.
-- `grammars/sdbl/grammar.js` as the SDBL source grammar.
-- `grammars/sdbl/test/corpus/*.sdbl` as the SDBL behavioral regression contract.
-- `grammars/sdbl/src/grammar.json`, `grammars/sdbl/src/node-types.json` and
-  `grammars/sdbl/src/parser.c` as SDBL generated artifacts when SDBL
-  grammar generation is part of the change.
-- `spec/sdbl-syntax.zip` as the packed vendored source snapshot for 1C
-  query-language syntax. Unpack to `spec/sdbl-syntax/` when reading pages.
-- Node, Rust and Python bindings only as parser package integration surfaces.
-
-The repository does not own analyzer facts, diagnostics, metadata models, HBK
-facts, query tools, report formats or downstream product behavior. Keep those
-concerns out of grammar changes unless a later accepted project decision adds a
-local contract for them.
-
-Use `spec/IMPLEMENTATION_TODO.md` as the active parser-work ledger. Keep
-completed parser-work history under `spec/archive/`. Use
-`spec/sdbl-query-language.md` and `spec/sdbl-source-evidence.md` for the durable
-SDBL grammar contract and source evidence. `README.md` is user-facing
-orientation and package usage documentation, not the implementation ledger. When
-README, chat notes, comments or task text conflict with the ledger, reconcile
-`spec/IMPLEMENTATION_TODO.md` before implementation.
-
-## Implementation Order
-
-For non-trivial grammar work, follow this order:
-
-1. Read `spec/IMPLEMENTATION_TODO.md` and the relevant
-   `grammars/bsl/grammar.js` rules.
-   For SDBL work, also read `spec/sdbl-query-language.md`,
-   `spec/sdbl-source-evidence.md` and the relevant `grammars/sdbl/grammar.js`
-   rules.
-2. Add or update focused corpus cases before changing grammar behavior.
-3. Implement only the active syntax behavior and its direct verification.
-4. Regenerate parser artifacts when the grammar changes.
-5. Update `spec/IMPLEMENTATION_TODO.md`, README or release notes when the
-   durable parser contract, validation command or public node shape changed.
-
-Keep implementation small and grammar-specific. Do not introduce broad
-compatibility layers, hidden fallbacks, generic parser pipelines or downstream
-consumer adapters just to make a syntax case pass.
-
-## Grammar Rules
-
-Test and implement concrete BSL syntax behavior, not broad approximations.
-
-- Prefer precise grammar rules over catch-all tokens.
-- Do not accept invalid BSL only to avoid `ERROR` nodes.
-- Do not accept invalid SDBL only to avoid `ERROR` nodes.
-- Keep BSL and SDBL grammar behavior separate until a later accepted decision
-  defines embedded query parsing for BSL strings.
-- Keep structured preprocessor parsing for `#Если` / `#Область`; do not replace
-  it with a generic skipped-line token.
-- Use `lezer-bsl` snippets only as candidate input examples. Do not copy Lezer
-  AST node names, visitors or failing expectations as the tree-sitter contract.
-- Preserve existing node shapes where practical. If a node-shape migration is
-  necessary, document it in tests and release notes.
-- Keep unknown or intentionally unsupported syntax explicit in the ledger
-  instead of hiding it in ad-hoc probes.
-
-## Testing Rules
-
-Test observable parser behavior.
-
-- Corpus tests should describe the syntax contract being protected.
-- Expected trees must use the current tree-sitter node style for this project.
-- Do not test private helper order or incidental `grammar.js` decomposition.
-- Prefer small corpus sections grouped by syntax feature over one large imported
-  dump.
-- Use deterministic BSL snippets for focused syntax coverage.
-- Use real project files only as acceptance corpus inputs and never mutate those
-  external checkouts during parser validation.
-
-Normal validation:
-
-- `npm test` verifies that the Node binding loads.
-- `tree-sitter test -p grammars/bsl` validates BSL corpus expectations when the
-  local CLI works.
-- `tree-sitter test -p grammars/sdbl` validates SDBL corpus expectations.
-- Targeted Node binding probes are acceptable only as temporary diagnostics when
-  the tree-sitter CLI is blocked on the current host.
-
-## Worktree Discipline
-
-Generated artifacts, dependency directories and unrelated local changes may
-exist in the checkout. Inspect scope before editing or committing, and do not
-revert user-owned changes. Keep commits narrow: grammar changes, corpus changes,
-generated parser updates and documentation updates should be grouped only when
-they belong to the same parser behavior.
+- **Before grammar work** read the `tree-sitter-bsl-grammar` skill: project
+  context, implementation order, grammar and testing rules, commands.
+- **Ledger.** `spec/IMPLEMENTATION_TODO.md` is the active plan. When README,
+  chat notes or task text conflict with it, reconcile the ledger first.
+- **Validation.** `npm test`, `tree-sitter test -p grammars/bsl`,
+  `tree-sitter test -p grammars/sdbl`.
+- **Scope.** The checkout may hold generated artifacts and unrelated local
+  changes. Do not revert user-owned changes. Group grammar, corpus, generated
+  parser and docs changes in one commit only when they belong to the same
+  parser behavior.
 
 <!-- agent-rules:begin | управляется sync-agent-rules.py, правьте dev-utils/agent-rules/ -->
 
@@ -242,6 +153,15 @@ Russian text costs more tokens per character than English.
     `Get-Content <file> | Select-Object -Skip N -First M` or `sed -n 'N,Mp'`.
   - Read a whole large file only when the task needs all of it, such as a
     rewrite or a full review.
+- **Compute instead of reading.** For a question about a whole large log,
+  JSON, or CSV (how many errors, a total, which keys occur), run the
+  computation next to the data and read only the result: `rg -c`,
+  PowerShell `ConvertFrom-Json` / `Import-Csv` / `Measure-Object`, `jq`, or
+  the repository's Python environment.
+- **One task, one session.** When a plan item is done and the conversation is
+  long, or the next request is a different task, post a handoff and suggest
+  continuing in a new session from it. Old logs and dead ends are re-sent with
+  every request and bury the facts that still matter.
 - **Shared rules block in `AGENTS.md`.** The part between the
   `agent-rules:begin` and `agent-rules:end` markers is generated from
   shared fragments, so a section with the same heading has the same text in
@@ -269,37 +189,13 @@ Run it with `python C:\Dev\Others\dev-utils\board.py`; add `-h` for options.
   - resource locks;
   - open posts.
 
-  Repeat `--repo` on `post` when the note belongs to several checkouts. Use
-  `*` only when it is truly workspace-wide.
-
   Entries marked `STALE?` refer to files that changed since the post.
 
 - **Posts are claims, not facts.** Verify a post before relying on it. When a
   post conflicts with the code, the code wins.
-- **What to post.** Post only what another agent would otherwise rediscover or
-  collide with. Keep a post under 1500 characters, and give evidence (a
-  command, log, or commit).
-  - `finding`: a non-obvious fact. Pass `--paths` with the files it depends on,
-    so the post goes stale when they change.
-  - `status`: work you leave unfinished or uncommitted.
-  - `question`: something you are blocked on.
-  - `decision`: a choice other agents must follow. Use `--supersedes <id>` to
-    replace an older post.
-  - `handoff`: multi-step work another session should continue. The handoff
-    text lives on the board, not in `.notes/`. Write it to a temp file,
-    starting with a summary. Post it with `--body-file` (up to 30000
-    characters). It stays open until someone resolves it; the next agent reads
-    it with `board.py show <id>`.
-- **Who writes.** Pass `--author` with your tool name. Resolve your own posts
-  with `board.py resolve <id>` once they no longer hold.
-- **Finishing a handoff.** When you finish the work it hands over:
-  1. Move what must outlast the task into the project's `.notes/_current.md` or
-     the repository docs. That means the current state, decisions, and open
-     problems, not the history of steps.
-  2. Resolve the handoff.
-
-  If you finish only part, post an updated handoff with `--supersedes <id>`.
-
+- **Posting.** Before you post (a finding, unfinished or uncommitted work, a
+  question, a decision, a handoff) or finish a handoff, read the `agent-board`
+  skill. Without it, see `board.py post -h`.
 - **1C lock.** `scripts/run.ps1` takes the machine-wide `1c` lock on its own for
   commands that drive 1C. If it exits with 75, another run holds 1C:
   - do not retry in a loop;

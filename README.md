@@ -1,9 +1,11 @@
 # tree-sitter-bsl
 
-Грамматика 1C BSL в формате [tree-sitter](https://github.com/tree-sitter/tree-sitter).
+Грамматика 1C BSL в формате
+[tree-sitter](https://github.com/tree-sitter/tree-sitter).
 Пакет также содержит отдельную грамматику `sdbl` для языка запросов 1C.
 
-Локальный playground — `npm start`, см. [Локальная разработка](#локальная-разработка).
+Локальный playground — `npm start`, см. [Локальная
+разработка](#локальная-разработка).
 
 ![playground](playground.png)
 
@@ -179,14 +181,18 @@ print(tree.root_node.sexp())
 - `grammars/sdbl/queries/highlights.scm` для подсветки самостоятельного SDBL и
   текста запросов, внедренного из BSL.
 
-В установленном Python-пакете они лежат в `tree_sitter_bsl/queries/<грамматика>/`:
+В установленном Python-пакете они лежат в
+`tree_sitter_bsl/queries/<грамматика>/`:
 `queries/bsl/highlights.scm`, `queries/bsl/injections.scm`,
 `queries/sdbl/highlights.scm`. Раскладка по подкаталогам обязательна — имя
 `highlights.scm` занято обеими грамматиками.
 
 ## Ссылки
 
-- Грамматика основана на правилах [BSL Parser](https://github.com/1c-syntax/bsl-parser)
+- Грамматика основана на правилах [BSL
+  Parser](https://github.com/1c-syntax/bsl-parser)
 - Архитектурные решения: [`docs/decisions`](docs/decisions)
-- Активный список parser-задач: [`spec/IMPLEMENTATION_TODO.md`](spec/IMPLEMENTATION_TODO.md)
-- Контракт грамматики SDBL: [`spec/sdbl-query-language.md`](spec/sdbl-query-language.md)
+- Активный список parser-задач:
+  [`spec/IMPLEMENTATION_TODO.md`](spec/IMPLEMENTATION_TODO.md)
+- Контракт грамматики SDBL:
+  [`spec/sdbl-query-language.md`](spec/sdbl-query-language.md)

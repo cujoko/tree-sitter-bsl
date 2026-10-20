@@ -475,7 +475,8 @@ Status: done.
 Archived result:
 
 - Verified Node binding and Rust binding checks in `tree-sitter-bsl`.
-- Ran `cargo test -p analyze-bsl` in `/home/alko/develop/open-source/v8-context`.
+- Ran `cargo test -p analyze-bsl` in
+  `/home/alko/develop/open-source/v8-context`.
 - Confirmed stable `LANGUAGE` and `SDBL_LANGUAGE` handles and downstream
   analyzer tests against the local path dependency.
 
@@ -580,7 +581,8 @@ Archived result:
 - Added WMS-style corpus coverage for leading and repeated omitted parameters.
 - Regenerated standalone SDBL and Zed embedded-SDBL parser artifacts.
 - `npm run test:corpus:sdbl` passed.
-- The WMS raw BSL query string from `усПоложениеКонтейнеров/Ext/ManagerModule.bsl`
+- The WMS raw BSL query string from
+  `усПоложениеКонтейнеров/Ext/ManagerModule.bsl`
   lines 82-159 parsed through `sdbl_embedded` with `hasError=false`.
 
 #### SDBL-26 - SDBL expression gaps from WMS acceptance
@@ -659,7 +661,8 @@ Archived result:
   produces an `unnecessary conflicts` generator warning.
 - Added focused corpus coverage combining fork parenthesized expressions with
   upstream per-variable export and keyword member-access rules.
-- Confirmed that the downstream `codemask-1c-core` failures come from intentional
+- Confirmed that the downstream `codemask-1c-core` failures come from
+  intentional
   upstream AST changes (`variable_spec` and `omitted_argument`), not malformed
   generated parser artifacts or a dropped fork grammar rule.
 - `npm run lint`, `npm run test:corpus`, and both Python binding tests passed.

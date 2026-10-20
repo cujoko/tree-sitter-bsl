@@ -33,7 +33,8 @@
   still, to 0.1.6, and are dropped entirely below.
 - Pointed package metadata at this fork: `pyproject.toml`, `package.json`,
   `Cargo.toml`, `tree-sitter.json`, `Makefile` and `CMakeLists.txt` referenced
-  either the upstream repository or a non-existent `tree-sitter/tree-sitter-bsl`.
+  either the upstream repository or a non-existent
+  `tree-sitter/tree-sitter-bsl`.
 - Renamed the Go module path to `github.com/cujoko/tree-sitter-bsl`. Breaking
   for Go consumers, but the previous path never resolved to this project.
 - Removed the tag-triggered workflow that published to npm, crates.io and PyPI.
@@ -95,4 +96,5 @@ No parser or grammar changes.
 - Updated parser-work specs, ADR implementation status, release notes and the
   active/archive task ledgers.
 
-**Full Changelog**: https://github.com/alkoleft/tree-sitter-bsl/compare/v0.1.6...v0.1.7
+**Full Changelog**:
+https://github.com/alkoleft/tree-sitter-bsl/compare/v0.1.6...v0.1.7
